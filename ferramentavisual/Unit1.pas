@@ -1,0 +1,193 @@
+unit Unit1;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
+  System.Net.HttpClient, System.Net.URLClient, System.Net.HttpClientComponent,
+  System.NetEncoding, Vcl.Imaging.pngimage, System.Generics.Collections;
+
+type
+  TForm1 = class(TForm)
+    btnAbrirCSV: TButton;
+    OpenDialog1: TOpenDialog;
+    Image1: TImage;
+    Image2: TImage;
+    Image3: TImage;
+    Memo1: TMemo;
+    Memo2: TMemo;
+    Memo3: TMemo;
+    Panel1: TPanel;
+    procedure btnAbrirCSVClick(Sender: TObject);
+  private
+    procedure GerarGraficosCSV(const FileName: string);
+    function LoadStreamFromURL(const URL: string): TMemoryStream;
+    function MontarURLQuickChart(const Labels, Values: TArray<string>): string;
+  public
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+{$R *.dfm}
+
+function TForm1.LoadStreamFromURL(const URL: string): TMemoryStream;
+var
+  http: THTTPClient;
+  FinalURL: string;
+begin
+  Result := TMemoryStream.Create;
+  http := THTTPClient.Create;
+  try
+    FinalURL := URL + '?id=' + FloatToStr(Random);
+    http.Get(FinalURL, Result);
+    Result.Position := 0;
+  finally
+    http.Free;
+  end;
+end;
+
+function MontarJSONChart(const Labels, Values: TArray<string>): string;
+var
+  LabelStr, ValueStr: string;
+begin
+  LabelStr := '"' + string.Join('","', Labels) + '"';
+  ValueStr := string.Join(',', Values);
+
+  Result :=
+    '{"type":"pie","data":{"labels":[' + LabelStr + '],"datasets":[{"data":[' + ValueStr + ']}]},' +
+    '"options":{' +
+      '"plugins":{' +
+        '"datalabels":{' +
+          '"formatter":"function(value, context) { ' +
+            'var data = context.chart.data.datasets[0].data;' +
+            'var sum = data.reduce((a,b) => a + b, 0);' +
+            'var percentage = Math.round((value / sum) * 100);' +
+            'return percentage + ''%'';' +
+          '}"' +
+          ',"color":"#fff",' +
+          '"font":{"weight":"bold","size":14}' +
+        '}' +
+      '},' +
+      '"legend":{' +
+        '"display":true,' +
+        '"position": "right",' +
+        '"labels": {"fontSize":12}' +
+      '}' +
+    '},' +
+    '"plugins":["datalabels"]' +
+    '}';
+end;
+
+function TForm1.MontarURLQuickChart(const Labels, Values: TArray<string>): string;
+var
+  JSONChart: string;
+begin
+  JSONChart := MontarJSONChart(Labels, Values);
+  Result := 'https://quickchart.io/chart?c=' + TNetEncoding.URL.Encode(JSONChart) + '&f=.png';
+end;
+
+procedure TForm1.GerarGraficosCSV(const FileName: string);
+var
+  Lines, Fields: TStringList;
+  I: Integer;
+  DictTipo, DictTipoCompleto, DictProjeto: TDictionary<string, Integer>;
+  Tipo, TipoCompleto, Projeto: string;
+
+  URL: string;
+  stream: TMemoryStream;
+  png: TPngImage;
+
+  procedure LoadChart(const Dict: TDictionary<string, Integer>; Image: TImage; Memo: TMemo);
+  var
+    Key: string;
+    ArrLabels: TArray<string>;
+    ArrValues: TArray<string>;
+    idx: Integer;
+  begin
+    SetLength(ArrLabels, Dict.Count);
+    SetLength(ArrValues, Dict.Count);
+    idx := 0;
+    for Key in Dict.Keys do
+    begin
+      ArrLabels[idx] := Key;
+      ArrValues[idx] := IntToStr(Dict[Key]);
+      Inc(idx);
+    end;
+    URL := MontarURLQuickChart(ArrLabels, ArrValues);
+    Memo.Lines.Text := URL;
+
+    stream := LoadStreamFromURL(URL);
+    try
+      png := TPngImage.Create;
+      try
+        png.LoadFromStream(stream);
+        Image.Picture.Assign(png);
+      finally
+        png.Free;
+      end;
+    finally
+      stream.Free;
+    end;
+  end;
+
+begin
+  Lines := TStringList.Create;
+  Fields := TStringList.Create;
+  DictTipo := TDictionary<string, Integer>.Create;
+  DictTipoCompleto := TDictionary<string, Integer>.Create;
+  DictProjeto := TDictionary<string, Integer>.Create;
+
+  try
+    Lines.LoadFromFile(FileName, TEncoding.UTF8);
+
+    for I := 1 to Lines.Count - 1 do
+    begin
+      Fields.Delimiter := ';';
+      Fields.StrictDelimiter := True;
+      Fields.DelimitedText := Lines[I];
+
+      if Fields.Count >= 4 then
+      begin
+        Tipo := Trim(Fields[1]);          // Tipo (Hint, Warning)
+        TipoCompleto := Trim(Fields[2]);  // TipoCompleto (Código)
+        Projeto := Trim(Fields[3]);       // Projeto
+
+        if not DictTipo.ContainsKey(Tipo) then
+          DictTipo.Add(Tipo, 0);
+        DictTipo[Tipo] := DictTipo[Tipo] + 1;
+
+        if not DictTipoCompleto.ContainsKey(TipoCompleto) then
+          DictTipoCompleto.Add(TipoCompleto, 0);
+        DictTipoCompleto[TipoCompleto] := DictTipoCompleto[TipoCompleto] + 1;
+
+        if not DictProjeto.ContainsKey(Projeto) then
+          DictProjeto.Add(Projeto, 0);
+        DictProjeto[Projeto] := DictProjeto[Projeto] + 1;
+      end;
+    end;
+
+    LoadChart(DictTipo, Image1, Memo1);
+    LoadChart(DictTipoCompleto, Image2, Memo2);
+    LoadChart(DictProjeto, Image3, Memo3);
+
+  finally
+    Lines.Free;
+    Fields.Free;
+    DictTipo.Free;
+    DictTipoCompleto.Free;
+    DictProjeto.Free;
+  end;
+end;
+
+procedure TForm1.btnAbrirCSVClick(Sender: TObject);
+begin
+  if OpenDialog1.Execute then
+    GerarGraficosCSV(OpenDialog1.FileName);
+end;
+
+end.
+

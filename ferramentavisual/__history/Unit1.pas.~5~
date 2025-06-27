@@ -1,0 +1,121 @@
+unit Unit1;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
+  System.Net.HttpClient, System.Net.URLClient, System.Net.HttpClientComponent,
+  Vcl.Imaging.pngimage, System.Generics.Collections;
+
+type
+  TForm1 = class(TForm)
+    btnAbrirCSV: TButton;
+    OpenDialog1: TOpenDialog;
+    Image1: TImage;
+    NetHTTPClient1: TNetHTTPClient;
+    Memo1: TMemo;
+    procedure btnAbrirCSVClick(Sender: TObject);
+  private
+    procedure GerarGraficoCSV(const FileName: string);
+    function LoadStreamFromURL(const URL: string): TMemoryStream;
+  public
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+{$R *.dfm}
+
+function TForm1.LoadStreamFromURL(const URL: string): TMemoryStream;
+var
+  http: THTTPClient;
+  FinalURL: string;
+begin
+  Result := TMemoryStream.Create;
+  http := THTTPClient.Create;
+  try
+    FinalURL := URL + '?id=' + FloatToStr(Random);
+    http.Get(FinalURL, Result);
+    Result.Position := 0;
+  finally
+    http.Free;
+  end;
+end;
+
+procedure TForm1.btnAbrirCSVClick(Sender: TObject);
+begin
+  if OpenDialog1.Execute then
+    GerarGraficoCSV(OpenDialog1.FileName);
+end;
+
+procedure TForm1.GerarGraficoCSV(const FileName: string);
+var
+  Lines, Fields: TStringList;
+  I: Integer;
+  Dict: TDictionary<string, Integer>;
+  Tipo, LinhaCSV: string;
+  Labels, Values: TStringList;
+  URL: string;
+  stream: TMemoryStream;
+  png: TPngImage;
+begin
+  Lines := TStringList.Create;
+  Fields := TStringList.Create;
+  Dict := TDictionary<string, Integer>.Create;
+  Labels := TStringList.Create;
+  Values := TStringList.Create;
+  Memo1.Clear;
+
+  try
+    Lines.LoadFromFile(FileName, TEncoding.UTF8);
+
+    for I := 1 to Lines.Count - 1 do // pula o cabeçalho
+    begin
+      LinhaCSV := StringReplace(Lines[I], ';', ',', [rfReplaceAll]);
+      Fields.CommaText := LinhaCSV;
+
+      if Fields.Count > 1 then
+      begin
+        Tipo := Fields[1]; // Tipo (Hint / Warning)
+        if not Dict.ContainsKey(Tipo) then
+          Dict.Add(Tipo, 0);
+        Dict[Tipo] := Dict[Tipo] + 1;
+      end;
+    end;
+
+    for Tipo in Dict.Keys do
+    begin
+      Labels.Add('"' + Tipo + '"');
+      Values.Add(IntToStr(Dict[Tipo]));
+    end;
+
+    URL := Format(
+      'https://quickchart.io/chart?c={type:"pie",data:{labels:[%s],datasets:[{data:[%s]}]}}&f=.png',
+      [Labels.CommaText, Values.CommaText]
+    );
+
+    Memo1.Lines.Add(URL);
+    stream := LoadStreamFromURL(URL);
+    png := TPngImage.Create;
+    try
+      png.LoadFromStream(stream);
+      Image1.Picture.Assign(png);
+    finally
+      png.Free;
+      stream.Free;
+    end;
+
+  finally
+    Lines.Free;
+    Fields.Free;
+    Dict.Free;
+    Labels.Free;
+    Values.Free;
+  end;
+end;
+
+end.
+
