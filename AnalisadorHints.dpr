@@ -70,7 +70,6 @@ begin
             Codigo,
             Match.Groups[6].Value
           ]));
-          Writeln('[HINT] ', Relatorio.Hints[Relatorio.Hints.Count - 1]);
         end
         else
         begin
@@ -80,7 +79,6 @@ begin
             Codigo,
             Match.Groups[6].Value
           ]));
-          Writeln('[WARNING] ', Relatorio.Warnings[Relatorio.Warnings.Count - 1]);
         end;
       end;
     end;
@@ -95,7 +93,6 @@ begin
       Relatorio.Hints.Free;
       Relatorio.Warnings.Free;
     end;
-
   finally
     Output.Free;
     SysUtils.DeleteFile(LogFile);
@@ -146,8 +143,7 @@ begin
     HTML.Add('</body></html>');
     HTML.SaveToFile(HTMLFile);
 
-    Writeln;
-    Writeln('✅ Relatório consolidado salvo em: ', HTMLFile);
+    Writeln('✅ Relatório HTML salvo em: ', HTMLFile);
 
   finally
     HTML.Free;
@@ -158,44 +154,61 @@ procedure ExportarCSV(const Relatorios: TList<TRelatorioProjeto>; const DestinoR
 var
   CSV: TStringList;
   Relatorio: TRelatorioProjeto;
-  Linha, NomeArquivo, CSVFile: string;
-  Partes: TArray<string>;
+  Linha, Projeto, Tipo, ArquivoFonte, LinhaCodigo, Codigo, Msg, Categoria, TipoCompleto, CSVFile: string;
+  Padrao: TRegEx;
+  Match: TMatch;
 begin
   CSV := TStringList.Create;
   try
-    CSV.Add('Projeto;Tipo;Arquivo;Linha;Código;Mensagem');
+    CSV.Add('Projeto;Tipo;Arquivo;Linha;Código;Mensagem;CategoriaCodigo;TipoCompleto');
+
+    Padrao := TRegEx.Create('^(.+)\((\d+)\):\s+\[([HW]\d{4})\]\s+(.*)$');
 
     for Relatorio in Relatorios do
     begin
       for Linha in Relatorio.Hints do
       begin
-        Partes := Linha.Split([':']);
-        NomeArquivo := Copy(Partes[0], 1, Pos('(', Partes[0]) - 1);
-        CSV.Add(Format('%s;Hint;%s;%s;%s;%s',
-          [Relatorio.NomeProjeto,
-           Trim(NomeArquivo),
-           Copy(Partes[0], Pos('(', Partes[0]) + 1, Pos(')', Partes[0]) - Pos('(', Partes[0]) - 1),
-           Copy(Partes[1], Pos('[' , Partes[1]) + 1, 5),
-           Trim(Copy(Partes[1], Pos('] ', Partes[1]) + 2, MaxInt))]));
+        Match := Padrao.Match(Linha);
+        if Match.Success then
+        begin
+          Projeto := Relatorio.NomeProjeto;
+          Tipo := 'Hint';
+          ArquivoFonte := Trim(Match.Groups[1].Value);
+          LinhaCodigo := Match.Groups[2].Value;
+          Codigo := Match.Groups[3].Value;
+          Msg := Match.Groups[4].Value;
+          Categoria := Copy(Codigo, 1, 1);
+          TipoCompleto := Tipo + ' ' + Codigo;
+
+          CSV.Add(Format('%s;%s;%s;%s;%s;%s;%s;%s',
+            [Projeto, Tipo, ArquivoFonte, LinhaCodigo, Codigo, Msg, Categoria, TipoCompleto]));
+        end;
       end;
 
       for Linha in Relatorio.Warnings do
       begin
-        Partes := Linha.Split([':']);
-        NomeArquivo := Copy(Partes[0], 1, Pos('(', Partes[0]) - 1);
-        CSV.Add(Format('%s;Warning;%s;%s;%s;%s',
-          [Relatorio.NomeProjeto,
-           Trim(NomeArquivo),
-           Copy(Partes[0], Pos('(', Partes[0]) + 1, Pos(')', Partes[0]) - Pos('(', Partes[0]) - 1),
-           Copy(Partes[1], Pos('[' , Partes[1]) + 1, 5),
-           Trim(Copy(Partes[1], Pos('] ', Partes[1]) + 2, MaxInt))]));
+        Match := Padrao.Match(Linha);
+        if Match.Success then
+        begin
+          Projeto := Relatorio.NomeProjeto;
+          Tipo := 'Warning';
+          ArquivoFonte := Trim(Match.Groups[1].Value);
+          LinhaCodigo := Match.Groups[2].Value;
+          Codigo := Match.Groups[3].Value;
+          Msg := Match.Groups[4].Value;
+          Categoria := Copy(Codigo, 1, 1);
+          TipoCompleto := Tipo + ' ' + Codigo;
+
+          CSV.Add(Format('%s;%s;%s;%s;%s;%s;%s;%s',
+            [Projeto, Tipo, ArquivoFonte, LinhaCodigo, Codigo, Msg, Categoria, TipoCompleto]));
+        end;
       end;
     end;
 
-    if DestinoRelatorio <> '' then
-      CSVFile := TPath.Combine(DestinoRelatorio, 'RelatorioCompleto.csv')
+    if DestinoRelatorio.Trim = '' then
+      CSVFile := TPath.Combine(GetCurrentDir, 'RelatorioCompleto.csv')
     else
-      CSVFile := 'RelatorioCompleto.csv';
+      CSVFile := TPath.Combine(DestinoRelatorio, 'RelatorioCompleto.csv');
 
     CSV.SaveToFile(CSVFile, TEncoding.UTF8);
     Writeln('📄 Exportação CSV salva em: ', CSVFile);
@@ -216,14 +229,58 @@ begin
   if ParamCount < 1 then
   begin
     Writeln('Uso: AnalisadorHints.exe "C:\Fontes" ["C:\DestinoRelatorio"]');
-    Halt(1);
+    Exit;
   end;
 
   DiretorioBase := ParamStr(1);
   if not TDirectory.Exists(DiretorioBase) then
   begin
-    Writeln('Diretório não encontrado: ', DiretorioBase);
-    Halt(1);
+    Writeln('Diretório base inválido: ', DiretorioBase);
+    Exit;
   end;
 
+  if ParamCount >= 2 then
+    DestinoRelatorio := ParamStr(2)
+  else
+    DestinoRelatorio := '';
+
+  if (DestinoRelatorio <> '') and (not TDirectory.Exists(DestinoRelatorio)) then
+    TDirectory.CreateDirectory(DestinoRelatorio);
+
+  Writeln('🔎 Buscando projetos em: ', DiretorioBase);
+  Projetos := TDirectory.GetFiles(DiretorioBase, '*.dpr', TSearchOption.soAllDirectories);
+  AlgumComProblemas := False;
+  Relatorios := TList<TRelatorioProjeto>.Create;
+
+  try
+    for Arquivo in Projetos do
+    begin
+      Writeln;
+      Writeln('📦 Analisando projeto: ', Arquivo);
+      AnalisarProjeto(Arquivo, Relatorios, AlgumComProblemas);
+    end;
+
+    if Relatorios.Count > 0 then
+    begin
+      GerarRelatorioUnico(Relatorios, DestinoRelatorio);
+      ExportarCSV(Relatorios, DestinoRelatorio);
+    end
+    else
+      Writeln('✅ Nenhum hint ou warning encontrado.');
+
+    for Relatorio in Relatorios do
+    begin
+      Relatorio.Hints.Free;
+      Relatorio.Warnings.Free;
+    end;
+
+  finally
+    Relatorios.Free;
+  end;
+
+  if AlgumComProblemas then
+    Halt(1)
+  else
+    Halt(0);
 end.
+
