@@ -1,0 +1,149 @@
+Buscando projetos em: c:\Fontes\
+
+?? Analisando projeto: c:\Fontes\admcondominios\Project1.dpr
+
+?? Analisando projeto: c:\Fontes\analisdordehints\AnalisadorHints.dpr
+
+?? Analisando projeto: c:\Fontes\api\modules\restrequest4delphi\samples\client\delphi\Samples.dpr
+
+?? Analisando projeto: c:\Fontes\api\modules\restrequest4delphi\samples\mercado-libre\delphi\mercadolibre.dpr
+
+?? Analisando projeto: c:\Fontes\api\modules\restrequest4delphi\samples\server-horse\delphi\Server.dpr
+
+?? Analisando projeto: c:\Fontes\api\REST.dpr
+
+?? Analisando projeto: c:\Fontes\calculadora precos minimos\CalculadoraPrecosMinimos.dpr
+
+?? Analisando projeto: c:\Fontes\calculadoravendas\CalculadoraPrecoVendaVCL.dpr
+
+?? Analisando projeto: c:\Fontes\calculadoravendas\CalculadoraPrecoVenda_CadastroProdutos\CalculadoraPrecoVenda.dpr
+[HINT] c:\Fontes\calculadoravendas\CalculadoraPrecoVenda_CadastroProdutos\Unit1.pas(112): [H2443] Inline function 'TJSONArray.GetValue' has not been expanded because unit 'System.Generics.Collections' is not specified in USES list
+
+?? Analisando projeto: c:\Fontes\calculadoravendas\CalculadoraPrecoVenda_ImpostosMarkup\CalculadoraPrecoVenda.dpr
+
+?? Analisando projeto: c:\Fontes\Cargas\cargas\Controle_de_Cargas.dpr
+
+?? Analisando projeto: c:\Fontes\Cargas\cargas\Display\Display.dpr
+
+?? Analisando projeto: c:\Fontes\Cargas\cargas\Encriptografar\Encriptografar.dpr
+
+?? Analisando projeto: c:\Fontes\Cargas\cargas\FontesTraducao\Traducao\TraducaoDev.dpr
+
+?? Analisando projeto: c:\Fontes\Cargas\cargas\Gerar Contra Senha\GerarContraSenha.dpr
+[HINT] c:\Fontes\Cargas\cargas\Gerar Contra Senha\UnitGerarContrasenha.pas(86): [H2077] Value assigned to 'SrcAsc' never used
+[HINT] c:\Fontes\Cargas\cargas\Gerar Contra Senha\UnitGerarContrasenha.pas(85): [H2077] Value assigned to 'SrcPos' never used
+
+?? Analisando projeto: c:\Fontes\Cargas\cargas\Painel\PainelVersao2.dpr
+
+?? Analisando projeto: c:\Fontes\Cargas\cargas\Visualizador\Painel_Cargas.dpr
+
+?? Analisando projeto: c:\Fontes\carregar vumeter em panel\VideoPlayerConect.dpr
+
+?? Analisando projeto: c:\Fontes\cotacaodolar\cotacaodolar.dpr
+
+?? Analisando projeto: c:\Fontes\CRM\CRM.dpr
+
+?? Analisando projeto: c:\Fontes\CRM\FSPix-VCL\PixVCL.dpr
+
+?? Analisando projeto: c:\Fontes\CRM2\crm-master\CRM.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\modules\horse\samples\delphi\apache\Apache.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\modules\horse\samples\delphi\cgi\CGI.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\modules\horse\samples\delphi\console\Console.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\modules\horse\samples\delphi\daemon\Daemon.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\modules\horse\samples\delphi\isapi\ISAPI.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\modules\horse\samples\delphi\vcl\VCL.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\modules\horse\samples\delphi\vcl-ssl\VCL_SSL.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\modules\horse\samples\delphi\winsvc\WinSvc.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\modules\horse\tests\src\Console.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\modules\horse\tests\src\VCL.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\modules\horse-compression\samples\delphi\Samples.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\modules\jhonson\samples\delphi\Samples.dpr
+
+?? Analisando projeto: c:\Fontes\Curso Horse\SrvBusiness.dpr
+
+?? Analisando projeto: c:\Fontes\dadosdauniao\dadosdauniao.dpr
+[WARNING] c:\Fontes\dadosdauniao\Unit1.pas(90): [W1036] Variable 'ReqBody' might not have been initialized
+
+?? Analisando projeto: c:\Fontes\DelphiIsoVCL\DelphiIsoVCL.dpr
+
+?? Analisando projeto: c:\Fontes\DelphiIsoVCL_player\DelphiIsoVCL.dpr
+
+?? Analisando projeto: c:\Fontes\exemploravereports\Rave_Exemplo.dpr
+
+?? Analisando projeto: c:\Fontes\ferramenta\Delphi2D2Bridge.dpr
+
+?? Analisando projeto: c:\Fontes\lerjasonparagrid\lerjsonparagrid.dpr
+
+?? Analisando projeto: c:\Fontes\Loja\Loja\Loja.dpr
+
+?? Analisando projeto: c:\Fontes\Loja\Loja2\Loja2.dpr
+
+?? Analisando projeto: c:\Fontes\Loja\Loja3\Loja3\Loja3.dpr
+
+?? Analisando projeto: c:\Fontes\mostrawmi\Project1.dpr
+
+?? Analisando projeto: c:\Fontes\Nova pasta\geradorlicitacao\GeradorLicitacoesremoto.dpr
+
+?? Analisando projeto: c:\Fontes\obter dados do sistema\obterdadosdosistema.dpr
+
+?? Analisando projeto: c:\Fontes\PDV_WEB_DNV\back_end\PdvWebBackEnd.dpr
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\CriadorDeBancoWheelPro\CriadorBancoWheelPro.dpr
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\Encriptografar\Encriptografar.dpr
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\Gerar Contra Senha\GerarContraSenha.dpr
+[HINT] c:\Fontes\Projeto Rodas\Gerar Contra Senha\UnitGerarContrasenha.pas(86): [H2077] Value assigned to 'SrcAsc' never used
+[HINT] c:\Fontes\Projeto Rodas\Gerar Contra Senha\UnitGerarContrasenha.pas(85): [H2077] Value assigned to 'SrcPos' never used
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\Mobile\WheelPro.dpr
+[WARNING] c:\Fontes\Projeto Rodas\Mobile\MainMobileApp.pas(91): [W1035] Return value of function 'TForm49.SendImage' might be undefined
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\obtendo numero serial do hd\GerarSerial.dpr
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\obtendo numero serial do hd\Project1.dpr
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\WheelPro\CriadorDeBancoWheelPro\CriadorBancoWheelPro.dpr
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\WheelPro\Encriptografar\Encriptografar.dpr
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\WheelPro\Gerar Contra Senha\GerarContraSenha.dpr
+[HINT] c:\Fontes\Projeto Rodas\WheelPro\Gerar Contra Senha\UnitGerarContrasenha.pas(86): [H2077] Value assigned to 'SrcAsc' never used
+[HINT] c:\Fontes\Projeto Rodas\WheelPro\Gerar Contra Senha\UnitGerarContrasenha.pas(85): [H2077] Value assigned to 'SrcPos' never used
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\WheelPro\Mobile\WheelPro.dpr
+[WARNING] c:\Fontes\Projeto Rodas\WheelPro\Mobile\MainMobileApp.pas(91): [W1035] Return value of function 'TForm49.SendImage' might be undefined
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\WheelPro\obtendo numero serial do hd\GerarSerial.dpr
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\WheelPro\obtendo numero serial do hd\Project1.dpr
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\WheelPro\WheelProV3.dpr
+
+?? Analisando projeto: c:\Fontes\Projeto Rodas\WheelProV3.dpr
+
+?? Analisando projeto: c:\Fontes\projetos mobile\teste01\Project1.dpr
+
+?? Analisando projeto: c:\Fontes\salaoexecencias\SalaoExcencias.dpr
+
+?? Analisando projeto: c:\Fontes\teste firebird wsl2\Project1.dpr
+
+?? Analisando projeto: c:\Fontes\teste mysql wsl container\Project1.dpr
+
+?? Analisando projeto: c:\Fontes\testeibdatabase\Project1.dpr
+
+?? Analisando projeto: c:\Fontes\testevianei\Project1.dpr
+
+?? Analisando projeto: c:\Fontes\VerificadorCodigoMorto\VerificadorCodigoMorto.dpr

@@ -1,0 +1,133 @@
+﻿program AnalisadorHints;
+
+{$APPTYPE CONSOLE}
+
+uses
+  SysUtils, Classes, System.IOUtils, System.RegularExpressions, Windows, System.Types;
+
+procedure AnalisarProjeto(const CaminhoDPR: string; var Falhas: Boolean);
+var
+  ProjetoNome, ProjetoDir, LogFile, LogLine, Codigo, HTMLFile, CmdLine: string;
+  Output, Hints, Warnings, HTML: TStringList;
+  Match: TMatch;
+  i: Integer;
+  Processo: TProcessInformation;
+  StartInfo: TStartupInfo;
+  CmdLineBuffer: array[0..1023] of WideChar;
+begin
+  ProjetoNome := ChangeFileExt(ExtractFileName(CaminhoDPR), '');
+  ProjetoDir := ExtractFilePath(CaminhoDPR);
+  LogFile := TPath.Combine(ProjetoDir, 'compilacao_temp.log');
+
+  CmdLine := Format('cmd /C dcc32 "%s" > "%s" 2>&1', [CaminhoDPR, LogFile]);
+  FillChar(CmdLineBuffer, SizeOf(CmdLineBuffer), 0);
+  StrPLCopy(CmdLineBuffer, CmdLine, Length(CmdLineBuffer) - 1);
+
+  ZeroMemory(@StartInfo, SizeOf(StartInfo));
+  StartInfo.cb := SizeOf(StartInfo);
+
+  if not CreateProcess(nil, @CmdLineBuffer[0], nil, nil, False, CREATE_NO_WINDOW, nil, nil, StartInfo, Processo) then
+  begin
+    Writeln('Erro ao executar dcc32 para: ', CaminhoDPR);
+    Exit;
+  end;
+  WaitForSingleObject(Processo.hProcess, INFINITE);
+  CloseHandle(Processo.hProcess);
+  CloseHandle(Processo.hThread);
+
+  if not FileExists(LogFile) then Exit;
+
+  Output := TStringList.Create;
+  Hints := TStringList.Create;
+  Warnings := TStringList.Create;
+  HTML := TStringList.Create;
+  try
+    Output.LoadFromFile(LogFile);
+
+    for i := 0 to Output.Count - 1 do
+    begin
+      LogLine := Output[i];
+      Match := TRegEx.Match(LogLine, '\[(Hint|Warning)\]\s+(H|W)(\d{4})\s+([^\(]+)\((\d+)\):\s+(.*)');
+      if Match.Success then
+      begin
+        Codigo := Match.Groups[2].Value + Match.Groups[3].Value;
+        if Match.Groups[1].Value = 'Hint' then
+        begin
+          Hints.Add(Format('%s(%s): [%s] %s', [Match.Groups[4].Value, Match.Groups[5].Value, Codigo, Match.Groups[6].Value]));
+          Writeln('[HINT] ', Hints[Hints.Count - 1]);
+        end
+        else
+        begin
+          Warnings.Add(Format('%s(%s): [%s] %s', [Match.Groups[4].Value, Match.Groups[5].Value, Codigo, Match.Groups[6].Value]));
+          Writeln('[WARNING] ', Warnings[Warnings.Count - 1]);
+        end;
+      end;
+    end;
+
+    if (Hints.Count > 0) or (Warnings.Count > 0) then
+    begin
+      Falhas := True;
+      HTMLFile := TPath.Combine(ProjetoDir, 'report_' + ProjetoNome + '.html');
+      HTML.Add('<html><body><h2>Relatório de Hints e Warnings: ' + ProjetoNome + '</h2>');
+      if Hints.Count > 0 then
+      begin
+        HTML.Add('<h3>Hints</h3><ul>');
+        for LogLine in Hints do
+          HTML.Add('<li>' + LogLine + '</li>');
+        HTML.Add('</ul>');
+      end;
+      if Warnings.Count > 0 then
+      begin
+        HTML.Add('<h3>Warnings</h3><ul>');
+        for LogLine in Warnings do
+          HTML.Add('<li>' + LogLine + '</li>');
+        HTML.Add('</ul>');
+      end;
+      HTML.Add('</body></html>');
+      HTML.SaveToFile(HTMLFile);
+    end;
+
+  finally
+    Output.Free;
+    Hints.Free;
+    Warnings.Free;
+    HTML.Free;
+    SysUtils.DeleteFile(LogFile);
+  end;
+end;
+
+var
+  DiretorioBase: string;
+  Projetos: TArray<string>;
+  Arquivo: string;
+  AlgumComProblemas: Boolean;
+begin
+  if ParamCount = 0 then
+  begin
+    Writeln('Uso: AnalisadorHints.exe "C:\Fontes"');
+    Halt(1);
+  end;
+
+  DiretorioBase := ParamStr(1);
+  if not TDirectory.Exists(DiretorioBase) then
+  begin
+    Writeln('Diretório não encontrado: ', DiretorioBase);
+    Halt(1);
+  end;
+
+  Writeln('Buscando projetos em: ', DiretorioBase);
+  Projetos := TDirectory.GetFiles(DiretorioBase, '*.dpr', TSearchOption.soAllDirectories);
+  AlgumComProblemas := False;
+
+  for Arquivo in Projetos do
+  begin
+    Writeln;
+    Writeln('🔍 Analisando projeto: ', Arquivo);
+    AnalisarProjeto(Arquivo, AlgumComProblemas);
+  end;
+
+  if AlgumComProblemas then
+    Halt(1)
+  else
+    Halt(0);
+end.

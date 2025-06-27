@@ -1,0 +1,89 @@
+program AnalisadorHints;
+
+{$APPTYPE CONSOLE}
+
+uses
+  SysUtils, Classes, System.IOUtils;
+
+var
+  Arquivo: string;
+  ListaArquivos, Hints, Warnings, Lines: TStringList;
+  Line: string;
+  HintsFound, WarningsFound: Integer;
+
+procedure AdicionarSeHintOuWarning(const Linha: string);
+begin
+  if Pos('[Hint]', Linha) > 0 then
+  begin
+    Hints.Add(Linha);
+    Writeln('[HINT] ', Linha);
+    Inc(HintsFound);
+  end
+  else if Pos('[Warning]', Linha) > 0 then
+  begin
+    Warnings.Add(Linha);
+    Writeln('[WARNING] ', Linha);
+    Inc(WarningsFound);
+  end;
+end;
+
+procedure GerarRelatorioHTML;
+var
+  Relatorio: TStringList;
+  Item: string;
+begin
+  Relatorio := TStringList.Create;
+  try
+    Relatorio.Add('<html><body><h2>Relatório de Hints e Warnings</h2>');
+    if Hints.Count > 0 then
+    begin
+      Relatorio.Add('<h3>Hints</h3><ul>');
+      for Item in Hints do
+        Relatorio.Add('<li>' + Item + '</li>');
+      Relatorio.Add('</ul>');
+    end;
+    if Warnings.Count > 0 then
+    begin
+      Relatorio.Add('<h3>Warnings</h3><ul>');
+      for Item in Warnings do
+        Relatorio.Add('<li>' + Item + '</li>');
+      Relatorio.Add('</ul>');
+    end;
+    Relatorio.Add('</body></html>');
+    Relatorio.SaveToFile('report.html');
+  finally
+    Relatorio.Free;
+  end;
+end;
+
+begin
+  Hints := TStringList.Create;
+  Warnings := TStringList.Create;
+  ListaArquivos := TStringList.Create;
+  Lines := TStringList.Create;
+  try
+    HintsFound := 0;
+    WarningsFound := 0;
+
+    FindAllFiles(ListaArquivos, GetCurrentDir, '*.pas;*.dpr', True);
+
+    for Arquivo in ListaArquivos do
+    begin
+      Lines.LoadFromFile(Arquivo);
+      for Line in Lines do
+        AdicionarSeHintOuWarning(Line);
+    end;
+
+    GerarRelatorioHTML;
+
+    if (HintsFound > 0) or (WarningsFound > 0) then
+      Halt(1)
+    else
+      Halt(0);
+  finally
+    Hints.Free;
+    Warnings.Free;
+    ListaArquivos.Free;
+    Lines.Free;
+  end;
+end.
